@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import os.path
@@ -147,7 +147,7 @@ class Judge:
             # professor
             com = self.choose_solution_compiler()
 
-        choosen_compiler = str(com.__class__).split("_")[1]
+        choosen_compiler = str(com.__class__).split("_")[1][:-2]
         self.pha.compilation.choosen_compiler = choosen_compiler
         self.cor.compilation.versus_compiler = choosen_compiler
         logging.info('---> chosen compiler: %s' % choosen_compiler)
@@ -221,10 +221,6 @@ class Judge:
             if (ext in fasts or ext in mediums) and util.file_exists('../problem/solution.java'):
                 self.sol.compilation.match = 'medium'
                 return compilers.compiler('JDK', self.hdl)
-            if util.file_exists('../problem/solution.py'):
-                self.sol.compilation.match = 'slow'
-                return compilers.compiler('Python3', self.hdl)
-
             if util.file_exists('../problem/solution.cc'):
                 self.sol.compilation.match = 'c++ fallback'
                 return compilers.compiler('GXX11', self.hdl)
@@ -324,7 +320,7 @@ class Judge:
 
     def checking_step(self):
 
-        logging.info('---- checking check ----')
+        logging.info('---- checking step ----')
 
         self.pha.checking.checker = checker = self.get('checker', 'std')
         self.pha.checking.presentation_error = presentation_error = self.get('presentation_error', True)
@@ -335,7 +331,7 @@ class Judge:
             dif = test + '.dif.png'
             cor = '../problem/' + test + '.cor'
             inp = '../problem/' + test + '.inp'
-            if not inf.has_key('execution'):
+            if 'execution' not in inf:
                 inf['veredict'] = '??'
             elif util.file_exists(test + ".exc"):
                 inf['veredict'] = 'EE'
@@ -506,15 +502,15 @@ def todict(obj, classkey=None):
         for (k, v) in obj.items():
             data[k] = todict(v, classkey)
         return data
-    elif hasattr(obj, '_ast'):
+    elif hasattr(obj, "_ast"):
         return todict(obj._ast())
-    elif hasattr(obj, '__iter__'):
+    elif hasattr(obj, "__iter__") and not isinstance(obj, str):
         return [todict(v, classkey) for v in obj]
-    elif hasattr(obj, '__dict__'):
+    elif hasattr(obj, "__dict__"):
         data = dict([(key, todict(value, classkey))
-                     for key, value in obj.__dict__.iteritems()
-                     if not callable(value) and not key.startswith('_')])
-        if classkey is not None and hasattr(obj, '__class__'):
+            for key, value in obj.__dict__.items()
+            if not callable(value) and not key.startswith('_')])
+        if classkey is not None and hasattr(obj, "__class__"):
             data[classkey] = obj.__class__.__name__
         return data
     else:
@@ -539,11 +535,11 @@ if __name__ == '__main__':
         judge.go()
         # print json.dumps(judge, default=lambda obj: vars(obj), indent=4)
         sys.exit(0)
-    except Exception, e:
+    except Exception as e:
         util.write_file(d + '/correction/correction.yml', 'veredict: IE\ninternal_error: %s\n' % e)
         logging.info('!!!! exception caught !!!!')
         logging.info(e)
-        print >>sys.stderr, e
+        print(e, sys.stderr)
         traceback.print_exc(file=sys.stderr)
-        print >>sys.stderr, json.dumps(judge, default=lambda obj: vars(obj), indent=4)
+        print(json.dumps(judge, default=lambda obj: vars(obj), indent=4), sys.stderr)
         sys.exit(1)

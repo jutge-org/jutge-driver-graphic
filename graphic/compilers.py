@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 import sys
@@ -6,7 +6,6 @@ import time
 import subprocess
 import signal
 import logging
-import commands
 import math
 import glob
 import util
@@ -152,7 +151,7 @@ class Compiler:
 
     def get_version(self, cmd, lin):
         '''Private method to get a particular line from a command output.'''
-        return commands.getoutput(cmd).split('\n')[lin].strip()
+        return subprocess.getoutput(cmd).split('\n')[lin].strip()
 
     def info(self):
         return {
@@ -203,7 +202,7 @@ class Compiler_GCC (Compiler):
         self.execute_monitor(tst, './program.exe')
 
     def compile(self):
-        if self.handler.has_key('source_modifier') and (self.handler['source_modifier'] == 'no_main' or self.handler['source_modifier'] == 'structs'):
+        if 'source_modifier' in self.handler and (self.handler['source_modifier'] == 'no_main' or self.handler['source_modifier'] == 'structs'):
             return self.compile_no_main()
         else:
             return self.compile_normal()
@@ -291,8 +290,6 @@ int main() {
             util.write_file('compilation1.txt', "Unreported error. ")
             util.del_file('program.exe')
             return False
-
-
 class Compiler_GXX (Compiler):
 
     compilers.append('GXX')
@@ -328,7 +325,7 @@ class Compiler_GXX (Compiler):
         self.execute_monitor(tst, './program.exe')
 
     def compile(self):
-        if self.handler.has_key('source_modifier') and (self.handler['source_modifier'] == 'no_main' or self.handler['source_modifier'] == 'structs'):
+        if 'source_modifier' in self.handler and (self.handler['source_modifier'] == 'no_main' or self.handler['source_modifier'] == 'structs'):
             return self.compile_no_main()
         else:
             return self.compile_normal()
@@ -349,7 +346,7 @@ class Compiler_GXX (Compiler):
         # Modify the program
         util.copy_file('program.cc', 'original.cc')
         ori = util.read_file('program.cc')
-        if ori.startswith(codecs.BOM_UTF8):     
+        if ori.encode('utf-8').startswith(codecs.BOM_UTF8):
             ori = ori[3:]
         util.write_file('program.cc',
                         '''
@@ -427,7 +424,7 @@ int main() {
         # Modify the program
         util.copy_file('program.cc', 'original.cc')
         ori = util.read_file('program.cc')
-        if ori.startswith(codecs.BOM_UTF8):     
+        if ori.encode('utf-8').startswith(codecs.BOM_UTF8):
             ori = ori[3:]
         main = util.read_file('../problem/main.cc')
         util.write_file('program.cc',
@@ -501,8 +498,6 @@ int main() {
             util.write_file('compilation1.txt', "Unreported error. ")
             util.del_file('program.exe')
             return False
-
-
 class Compiler_P1XX (Compiler_GXX):
 
     compilers.append('P1XX')
@@ -512,8 +507,6 @@ class Compiler_P1XX (Compiler_GXX):
 
     def name(self):
         return 'GNU C++ Compiler with extra flags for beginners'
-
-
 class Compiler_GXX11 (Compiler_GXX):
 
     compilers.append('GXX11')
@@ -526,8 +519,18 @@ class Compiler_GXX11 (Compiler_GXX):
 
     def flags2(self):
         return '-D_JUDGE_ -DNDEBUG -O2 -std=c++11'
+class Compiler_GXX17 (Compiler_GXX):
 
+    compilers.append('GXX17')
 
+    def name(self):
+        return 'GNU C++17 Compiler'
+
+    def flags1(self):
+        return '-D_JUDGE_ -DNDEBUG -O2 -std=c++17'
+
+    def flags2(self):
+        return '-D_JUDGE_ -DNDEBUG -O2 -std=c++17'
 class Compiler_GPC (Compiler):
 
     compilers.append('GPC')
@@ -576,8 +579,6 @@ class Compiler_GPC (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_GFortran (Compiler):
 
     compilers.append('GFortran')
@@ -621,8 +622,6 @@ class Compiler_GFortran (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_GObjC (Compiler):
 
     compilers.append('GObjC')
@@ -666,8 +665,6 @@ class Compiler_GObjC (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_GHC (Compiler):
 
     compilers.append('GHC')
@@ -700,7 +697,7 @@ class Compiler_GHC (Compiler):
         return 'hs'
 
     def compile(self):
-        if self.handler.has_key('source_modifier') and self.handler['source_modifier'] == 'no_main':
+        if 'source_modifier' in self.handler and self.handler['source_modifier'] == 'no_main':
             return self.compile_no_main()
         else:
             return self.compile_normal()
@@ -735,8 +732,6 @@ class Compiler_GHC (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_RunHaskell (Compiler):
 
     compilers.append('RunHaskell')
@@ -772,7 +767,7 @@ class Compiler_RunHaskell (Compiler):
 
     def compile(self):
         f = open("extra.hs", "w")
-        print >>f, '"testing"'
+        print('"testing"', file=f)
         f.close()
         return self.compile_with("extra.hs")
 
@@ -783,17 +778,17 @@ class Compiler_RunHaskell (Compiler):
                 os.system("cat judge.hs >> work.hs")
             data = open("work.hs", "r").read()
             f = open("work.hs", "w")
-            print >>f, "module Main (mainjutgeorg) where"
-            print >>f, ""
-            print >>f, data
-            print >>f, ""
-            print >>f, "mainjutgeorg = do"
+            print("module Main (mainjutgeorg) where", file=f)
+            print("", file=f)
+            print(data, file=f)
+            print("", file=f)
+            print("mainjutgeorg = do", file=f)
             for line in open(extra).readlines():
                 line = line.rstrip()
                 if line.startswith("let "):
-                    print >>f, "    %s" % line
+                    print("    %s" % line, file=f)
                 else:
-                    print >>f, "    print (%s)" % line
+                    print("    print (%s)" % line, file=f)
             f.close()
             self.execute_compiler('ghc  -main-is mainjutgeorg ' + self.flags1() + ' work.hs -o work.exe 1> /dev/null 2> compilation1.txt')
         except CompilationTooLong:
@@ -809,11 +804,9 @@ class Compiler_RunHaskell (Compiler):
             self.execute_monitor(tst, '/bin/cat')
             # let's fake the verdict
             f = open(tst + ".res", "w")
-            print >>f, "execution: EE"
-            print >>f, "execution_error: Cannot test"
+            print("execution: EE", file=f)
+            print("execution_error: Cannot test", file=f)
             f.close()
-
-
 class Compiler_RunPython (Compiler):
 
     compilers.append('RunPython')
@@ -899,11 +892,9 @@ except:
             self.execute_monitor(tst, '/bin/cat')
             # let's fake the verdict
             f = open(tst + ".res", "w")
-            print >>f, "execution: EE"
-            print >>f, "execution_error: Cannot test"
+            print("execution: EE", file=f)
+            print("execution_error: Cannot test", file=f)
             f.close()
-
-
 class Compiler_GDC (Compiler):
 
     compilers.append('GDC')
@@ -947,8 +938,6 @@ class Compiler_GDC (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_F2C (Compiler):
 
     compilers.append('F2C')
@@ -998,8 +987,6 @@ class Compiler_F2C (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_P2C (Compiler):
 
     compilers.append('P2C')
@@ -1049,8 +1036,6 @@ class Compiler_P2C (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_Stalin (Compiler):
 
     compilers.append('Stalin')
@@ -1100,8 +1085,6 @@ class Compiler_Stalin (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_Chicken (Compiler):
 
     compilers.append('Chicken')
@@ -1147,8 +1130,6 @@ class Compiler_Chicken (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_GCJ (Compiler):
 
     compilers.append('GCJ')
@@ -1192,8 +1173,6 @@ class Compiler_GCJ (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_GNAT (Compiler):
 
     compilers.append('GNAT')
@@ -1237,8 +1216,6 @@ class Compiler_GNAT (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_FPC (Compiler):
 
     compilers.append('FPC')
@@ -1282,8 +1259,6 @@ class Compiler_FPC (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_FBC (Compiler):
 
     compilers.append('FBC')
@@ -1334,8 +1309,6 @@ class Compiler_FBC (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_JDK (Compiler):
 
     compilers.append('JDK')
@@ -1365,7 +1338,7 @@ class Compiler_JDK (Compiler):
         return 'java'
 
     def compile(self):
-        if self.handler.has_key('source_modifier') and self.handler['source_modifier'] == 'no_main':
+        if 'source_modifier' in self.handler and self.handler['source_modifier'] == 'no_main':
             return self.compile_no_main()
         else:
             return self.compile_normal()
@@ -1447,8 +1420,6 @@ class Compiler_JDK (Compiler):
         # exit
         if r != 0:
             raise ExecutionError
-
-
 class Compiler_MonoCS (Compiler):
 
     compilers.append('MonoCS')
@@ -1469,7 +1440,7 @@ class Compiler_MonoCS (Compiler):
         return 'C#'
 
     def version(self):
-        return self.get_version('gmcs2 --version', 0)
+        return self.get_version('mcs --version', 0)
 
     def flags1(self):
         return ''
@@ -1483,7 +1454,7 @@ class Compiler_MonoCS (Compiler):
     def compile(self):
         util.del_file('program.exe')
         try:
-            self.execute_compiler('gmcs2 ' + self.flags1() + ' program.cs 1> /dev/null 2> compilation1.txt')
+            self.execute_compiler('mcs ' + self.flags1() + ' program.cs 1> /dev/null 2> compilation1.txt')
         except CompilationTooLong:
             util.write_file('compilation1.txt', 'Compilation time exceeded')
             util.del_file('program.exe')
@@ -1491,9 +1462,7 @@ class Compiler_MonoCS (Compiler):
         return util.file_exists('program.exe')
 
     def execute(self, tst):
-        self.execute_monitor(tst, './program.exe')
-
-
+        self.execute_monitor(tst, 'mono ./program.exe')
 class Compiler_Python (Compiler):
 
     compilers.append('Python')
@@ -1554,8 +1523,6 @@ except:
         util.copy_file('program.py', 'subdir')
 
         self.execute_monitor(tst, '/usr/bin/python wrapper.py')
-
-
 class Compiler_Python3 (Compiler):
 
     compilers.append('Python3')
@@ -1588,7 +1555,7 @@ class Compiler_Python3 (Compiler):
         return 'py'
 
     def compile(self):
-        if self.handler.has_key('source_modifier') and (self.handler['source_modifier'] == 'no_main' or self.handler['source_modifier'] == 'structs'):
+        if 'source_modifier' in self.handler and (self.handler['source_modifier'] == 'no_main' or self.handler['source_modifier'] == 'structs'):
             return self.compile_no_main()
         else:
             return self.compile_normal()
@@ -1647,8 +1614,6 @@ except:
         util.copy_file('program.py', 'subdir')
 
         self.execute_monitor(tst, '/usr/bin/python3 wrapper.py')
-
-
 class Compiler_Perl (Compiler):
 
     compilers.append('Perl')
@@ -1689,8 +1654,6 @@ class Compiler_Perl (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, ' /usr/bin/perl program.pl')
-
-
 class Compiler_Lua (Compiler):
 
     compilers.append('Lua')
@@ -1729,8 +1692,6 @@ class Compiler_Lua (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, ' /usr/bin/lua program.luac')
-
-
 class Compiler_R (Compiler):
 
     compilers.append('R')
@@ -1763,7 +1724,7 @@ class Compiler_R (Compiler):
         return 'R'
 
     def compile(self):
-        if self.handler['source_modifier'] == 'no_main':
+        if 'source_modifier' in self.handler and self.handler['source_modifier'] == 'no_main':
             return self.compile_no_main()
         else:
             return self.compile_normal()
@@ -1798,10 +1759,8 @@ wrapper_R <- function() {
         return True
 
     def execute(self, tst):
-        util.copy_file("../../driver/etc/executer.R", ".")       
+        util.copy_file("../../driver/etc/executer.R", ".")
         self.execute_monitor(tst, ' --maxprocs=100 /usr/bin/Rscript executer.R')
-
-
 class Compiler_Ruby (Compiler):
 
     compilers.append('Ruby')
@@ -1842,8 +1801,6 @@ class Compiler_Ruby (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, ' /usr/bin/ruby program.rb')
-
-
 class Compiler_Guile (Compiler):
 
     compilers.append('Guile')
@@ -1882,8 +1839,6 @@ class Compiler_Guile (Compiler):
     def execute(self, tst):
         # !!! I had to add --maxfiles
         self.execute_monitor(tst, ' --maxfiles=7 /usr/bin/guile program.scm')
-
-
 class Compiler_Erlang (Compiler):
 
     compilers.append('Erlang')
@@ -1923,8 +1878,6 @@ class Compiler_Erlang (Compiler):
     def execute(self, tst):
         # !!! I had to add --maxfiles
         self.execute_monitor(tst, ' --maxfiles=30 -- /usr/bin/erl -noshell -s program start -s init stop')
-
-
 class Compiler_BEEF (Compiler):
 
     # Hack: copy program.bf to /tmp because otherwise we have permission
@@ -1964,8 +1917,6 @@ class Compiler_BEEF (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, ' /usr/bin/beef /tmp/program.bf')
-
-
 class Compiler_WS (Compiler):
 
     compilers.append('WS')
@@ -2003,8 +1954,6 @@ class Compiler_WS (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, ' /usr/bin/wspace program.ws')
-
-
 class Compiler_PHP (Compiler):
 
     compilers.append('PHP')
@@ -2045,8 +1994,6 @@ class Compiler_PHP (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, ' /usr/bin/php program.php')
-
-
 class Compiler_nodejs (Compiler):
 
     compilers.append('nodejs')
@@ -2113,9 +2060,6 @@ class Compiler_nodejs (Compiler):
         # exit
         if r != 0:
             raise ExecutionError
-
-
-
 class Compiler_Go (Compiler):
 
     compilers.append('Go')
@@ -2159,8 +2103,6 @@ class Compiler_Go (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_CLISP (Compiler):
 
     compilers.append('CLISP')
@@ -2206,8 +2148,6 @@ class Compiler_CLISP (Compiler):
     def execute(self, tst):
         # clisp opens some auxiliar files???
         self.execute_monitor(tst, ' --maxfiles=8 /usr/bin/clisp program.fas')
-
-
 class Compiler_Verilog (Compiler):
 
     compilers.append('Verilog')
@@ -2246,8 +2186,6 @@ class Compiler_Verilog (Compiler):
 
     def execute(self, tst):
         self.execute_monitor(tst, ' /usr/local/bin/vvp-0.8 program.vvp')
-
-
 class Compiler_PRO2 (Compiler):
 
     compilers.append('PRO2')
@@ -2378,8 +2316,6 @@ int main() {
 
     def execute(self, tst):
         self.execute_monitor(tst, './program.exe')
-
-
 class Compiler_MakePRO2 (Compiler):
 
     compilers.append('MakePRO2')

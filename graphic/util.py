@@ -4,7 +4,7 @@
 ##############################################################################
 
 import base64
-import commands
+import subprocess
 import fcntl
 import getpass
 import glob
@@ -60,7 +60,7 @@ def hostname():
 
 def exit(msg, err=1):
     '''Prints msg to stderr and exits program with code err.'''
-    print >>sys.stderr, os.path.basename(sys.argv[0]) + ': ' + msg
+    print(os.path.basename(sys.argv[0]) + ': ' + msg, sys.stderr)
     sys.exit(err)
 
 
@@ -93,17 +93,28 @@ def write_file(name, txt=''):
 
 def append_file(name, txt=''):
     '''Adds to file name the contents of txt.'''
-    f = open(name, 'a')
-    f.write(txt)
-    f.close()
+    try:
+        f = open(name, 'a')
+        f.write(txt)
+        f.close()
+    except UnicodeDecodeError:
+        f = open(name, 'a', encoding='latin-1')
+        f.write(txt)
+        f.close()
 
 
 def read_file(name):
     '''Returns a string with the contents of the file name.'''
-    f = open(name)
-    r = f.read()
-    f.close()
-    return r
+    try:
+        f = open(name, 'r')
+        r = f.read()
+        f.close()
+        return r
+    except UnicodeDecodeError:
+        f = open(name, 'r', encoding='latin-1')
+        r = f.read()
+        f.close()
+        return r
 
 
 def del_file(name):
@@ -289,15 +300,15 @@ def read_props(path):
 
 
 def print_yml(inf):
-    print yaml.dump(inf, indent=4, width=1000, default_flow_style=False)
+    print(yaml.dump(inf, indent=4, width=1000, default_flow_style=False))
 
 
 def write_yml(path, inf):
-    yaml.dump(inf, file(path, 'w'), indent=4, width=1000, default_flow_style=False)
+    yaml.dump(inf, open(path, 'w'), indent=4, width=1000, default_flow_style=False)
 
 
 def read_yml(path):
-    return yaml.load(file(path))
+    return yaml.load(open(path, encoding='utf-8'), Loader=yaml.FullLoader)
 
 
 ##############################################################################
@@ -352,13 +363,13 @@ def current_date():
 
 def system(cmd):
     '''As os.system(cmd) but writes cmd.'''
-    print cmd
+    print(cmd)
     return os.system(cmd)
 
 
 def cd_system(path, cmd):
     '''As os.system(cmd) but executes from directory path.'''
-    print cmd
+    print(cmd)
     pushd(path)
     r = os.system(cmd)
     popd()
@@ -367,7 +378,7 @@ def cd_system(path, cmd):
 
 def command(cmd):
     '''As os.system(cmd) but returns stdout as an string.'''
-    return commands.getoutput(cmd)
+    return subprocess.getoutput(cmd)
 
 
 def sort(L):
@@ -379,7 +390,7 @@ def sort(L):
 
 def myprint(msg):
     '''Print the message msg in log format and flushes.'''
-    print current_time(), '-', msg
+    print(current_time(), '-', msg)
     sys.stderr.flush()
     sys.stdout.flush()
 
@@ -557,7 +568,7 @@ class Daemon(object):
             pid = os.fork()
             if pid > 0:
                 sys.exit(0)  # Exit first parent
-        except OSError, exc:
+        except OSError as exc:
             sys.exit('%s: fork #1 failed: (%d) %s\n' % (sys.argv[0], exc.errno, exc.strerror))
 
         # Decouple from parent environment
@@ -570,7 +581,7 @@ class Daemon(object):
             pid = os.fork()
             if pid > 0:
                 sys.exit(0)  # Exit second parent
-        except OSError, exc:
+        except OSError as exc:
             sys.exit('%s: fork #2 failed: (%d) %s\n' % (sys.argv[0], exc.errno, exc.strerror))
 
         # Now I am a daemon!
@@ -604,7 +615,7 @@ class Daemon(object):
             sys.exit('Cannot find pidfile. The daemon is not running?')
         try:
             pidfile = open(self.options.pidfile, 'rb')
-        except IOError, exc:
+        except IOError as exc:
             sys.exit('cannot open pidfile %s: %s' % (self.options.pidfile, str(exc)))
         data = pidfile.read()
         try:
