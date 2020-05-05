@@ -9,7 +9,6 @@ import fcntl
 import getpass
 import glob
 import grp
-import grp
 import logging
 import optparse
 import os
