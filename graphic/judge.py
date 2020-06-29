@@ -12,11 +12,11 @@ import re
 import pprint
 import traceback
 import json
-import util
 import monitor
 import compilers
 import checkers
 
+from jutge import util
 
 class Judge:
 
@@ -35,8 +35,8 @@ class Judge:
         self.dir = os.getcwd()
 
         self.env = Record()
-        self.env.hostname = util.hostname()
-        self.env.username = util.username()
+        self.env.hostname = util.get_hostname()
+        self.env.username = util.get_username()
         self.env.slave_id = sys.argv[1]
         self.env.time_beg = util.current_time()
         self.env.uname = ' '.join(os.uname())

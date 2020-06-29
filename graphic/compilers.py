@@ -8,9 +8,10 @@ import signal
 import logging
 import math
 import glob
-import util
 import monitor
 import codecs
+
+from jutge import util
 
 # Maximum time to compile
 max_compilation_time = 30

@@ -5,9 +5,9 @@ import os
 import re
 import string
 import time
-import util
 import logging
 
+from jutge import util
 
 '''
 Checker functions are used to check that a generated output file is correct with
