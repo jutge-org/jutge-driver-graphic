@@ -7,7 +7,6 @@ import string
 import time
 import logging
 
-from jutge import util
 
 '''
 Checker functions are used to check that a generated output file is correct with
@@ -37,8 +36,11 @@ def graphic(file1, file2, diff):
     '''
 
     try:
-        t1 = util.read_file(file1)
-        t2 = util.read_file(file2)
+        with open(file1, 'rb') as f:
+            t1 = f.read()
+        with open(file2, 'rb') as f:
+            t2 = f.read()
+
         if t1 == t2:
             return 'AC'
 

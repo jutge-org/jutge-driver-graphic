@@ -1,3 +1,5 @@
+// JDK wrapper to correct Jutge submissions
+
 class JudgeMain {
 
     public static void main (String[] args) {
