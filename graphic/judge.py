@@ -1,22 +1,20 @@
-#!/usr/bin/python3
+#!/usr/bin/env python3
 
 import os
 import os.path
 import sys
-import time
-import copy
 import glob
 import logging
 import math
 import re
-import pprint
 import traceback
 import json
-import monitor
+
 import compilers
 import checkers
 
 from jutge import util
+import monitor
 
 class Judge:
 
@@ -28,7 +26,7 @@ class Judge:
         logging.info('<<<< end with veredict %s >>>>' % self.cor.veredict)
 
     def init_phase(self):
-        '''Initializes the data structures of the Judge object.'''
+        """Initializes the data structures of the Judge object."""
 
         logging.info('**** init phase ****')
 
@@ -53,8 +51,8 @@ class Judge:
 
         self.cor = Record()
         self.sol = Record()
-        self.pha = None                 # will point to self.cor or self.sol latter on
-        self.phase = None               # will be 'solution' or 'correction' latter on
+        self.pha = None  # will point to self.cor or self.sol latter on
+        self.phase = None  # will be 'solution' or 'correction' latter on
 
         for x in [self.cor, self.sol]:
             x.veredict = 'IE'
@@ -75,7 +73,7 @@ class Judge:
                 x.tests[t] = {}
 
     def solution_phase(self):
-        '''Judges the reference solution.'''
+        """Judges the reference solution."""
 
         logging.info('**** solution phase ****')
 
@@ -92,7 +90,7 @@ class Judge:
         self.output_step()
 
     def correction_phase(self):
-        '''Judges the candidate solution.'''
+        """Judges the candidate solution."""
 
         logging.info('**** correction phase ****')
 
@@ -191,7 +189,7 @@ class Judge:
         return ok
 
     def choose_solution_compiler(self):
-        '''Returns the best matched compiler among the possible ones in the solution for the compiler selected in the submission.'''
+        """Returns the best matched compiler among the possible ones in the solution for the compiler selected in the submission."""
 
         # get requested compiler and its entension
         cpl = self.get('compiler_id')
@@ -276,8 +274,20 @@ class Judge:
                 cputime = max(0.5, cputime)
             limtime = int(cputime + 1.5)
             clktime = max(3 * limtime, 2.0 * clktime)
+
+            jdelgado = self.get('author') == "U24827"
+            if jdelgado:
+                logging.info('**** Jordi Delgado detected ****')
+
             filesze = max(1, int(math.ceil(2.0 * filesze)))
             ops += ' --maxtime=%f:%i:%i --maxoutput=%i' % (cputime, limtime, clktime, filesze)
+
+            if jdelgado:
+                cputime = 40
+                limtime = 60
+                clktime = 70
+                ops = ' --maxtime=%f:%i:%i --maxoutput=%i' % (cputime, limtime, clktime, filesze)
+
             util.write_file('%s.ops' % test, ops)
 
         # Create the required files (i.e. executable)
@@ -292,7 +302,7 @@ class Judge:
             success = True
 
         # Move the files up
-        for ext in ('inp', 'err', 'log', 'res'):
+        for ext in ('inp', 'out', 'err', 'log', 'res'):
             # the following check is due to a difficult bug we once had
             if not util.file_exists(test + '.' + ext):
                 raise Exception('%s missing!!!' % (test + '.' + ext,))
@@ -335,7 +345,7 @@ class Judge:
                 inf['veredict'] = '??'
             elif util.file_exists(test + ".exc"):
                 inf['veredict'] = 'EE'
-                inf['veredict_info'] = "Uncaught exception " + file(test + ".exc").readline().strip()
+                inf['veredict_info'] = "Uncaught exception " + open(test + ".exc").readline().strip()
             elif inf['execution'] == 'EE':
                 inf['veredict'] = 'EE'
                 inf['veredict_info'] = inf['execution_error']
@@ -443,7 +453,7 @@ class Judge:
                     util.del_file(f)
 
     def get_tests(self):
-        '''Returns the list of tests, in sorted order, with sample* first.'''
+        """Returns the list of tests, in sorted order, with sample* first."""
 
         # get the tests without extensions nor paths
         tests = [
@@ -479,7 +489,7 @@ class Judge:
             raise Exception('missing option (%s)' % opt)
         info = str(val) + ' (' + whe + ')'
         # if opt not in self.wrk['used_options'] or self.wrk['used_options'][opt] != info:
-        #self.wrk['used_options'][opt] = info
+        # self.wrk['used_options'][opt] = info
         logging.info('   > using %s for %s from %s' % (str(val), opt, whe))
         return val
 
@@ -508,7 +518,7 @@ def todict(obj, classkey=None):
         return [todict(v, classkey) for v in obj]
     elif hasattr(obj, "__dict__"):
         data = dict([(key, todict(value, classkey))
-            for key, value in obj.__dict__.items()
+        for key, value in obj.__dict__.items()
             if not callable(value) and not key.startswith('_')])
         if classkey is not None and hasattr(obj, "__class__"):
             data[classkey] = obj.__class__.__name__
@@ -518,7 +528,7 @@ def todict(obj, classkey=None):
 
 
 class Record:
-    '''Just to have an object to fill with fields.'''
+    """Just to have an object to fill with fields."""
     pass
 
 
