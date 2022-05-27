@@ -7,6 +7,8 @@ import os
 import signal
 import subprocess
 import time
+import shutil
+import turtle_pil
 
 import monitor
 from jutge import util
@@ -1561,12 +1563,20 @@ class Compiler_Python3(Compiler):
         return util.file_size('compilation2.txt') == 0
 
     def execute(self, tst):
-        # Under vinga, python cannot locate the modules in the current dir, so we move them to a subdir.
-        util.copy_file("../../driver/etc/py/python_wrapper.py", "./wrapper.py")
-        os.mkdir('subdir')
-        util.copy_file('program.py', 'subdir')
+        # fake the turtle module with turtle-pil
+        shutil.copy(turtle_pil.__file__, 'turtle.py')
 
-        self.execute_monitor(tst, '/usr/bin/env python3 wrapper.py')
+        # under jutge-vinga, for some strange reason, python cannot locate the modules in the current dir, so we move them to a subdir under /tmp.
+
+        ori = os.getcwd()
+        wrk = '/tmp/' + tst + '.workdir'
+        util.del_dir(wrk)
+        os.mkdir(wrk)
+        os.system('cp -r * ' + wrk)
+        os.chdir(wrk)
+        self.execute_monitor(tst, '/usr/bin/python3 program.py')
+        os.system('cp -r * ' + ori)
+        os.chdir(ori)
 
 
 class Compiler_Perl(Compiler):
