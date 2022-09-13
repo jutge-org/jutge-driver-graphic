@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import subprocess
 import os
 import os.path
 import sys
@@ -309,7 +310,7 @@ class Judge:
             else:
                 util.move_file(test + '.' + ext, '..')
         if not util.file_exists('output.png'):
-            util.copy_file('../../driver/etc/notfound.png', '../'+test+'.out')
+            util.copy_file(self.dir + '/driver/etc/notfound.png', '../'+test+'.out')
         else:
             util.move_file('output.png', '../'+test+'.out')
         if util.file_exists(test+'.dif.png'):
