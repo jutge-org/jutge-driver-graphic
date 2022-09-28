@@ -145,6 +145,10 @@ class Judge:
         else:
             # professor
             com = self.choose_solution_compiler()
+            # hack for MyPy
+            if cpl == 'MyPy':
+                logging.info('MyPy hack')
+                com = compilers.compiler('Python3', self.hdl)
 
         choosen_compiler = str(com.__class__).split("_")[1][:-2]
         self.pha.compilation.choosen_compiler = choosen_compiler
