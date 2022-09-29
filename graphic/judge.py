@@ -339,6 +339,12 @@ class Judge:
 
         self.pha.checking.checker = checker = self.get('checker', 'std')
         self.pha.checking.presentation_error = presentation_error = self.get('presentation_error', True)
+        t = None
+        try:
+            t = self.get('tolerance', None)
+        except:
+            pass
+        self.pha.checking.tolerance = tolerance = t
 
         for test in self.tests:
             inf = self.pha.tests[test]
@@ -355,7 +361,7 @@ class Judge:
                 inf['veredict'] = 'EE'
                 inf['veredict_info'] = inf['execution_error']
             else:
-                ver = checkers.graphic(out, cor, dif)
+                ver = checkers.graphic(out, cor, dif, tolerance)
                 logging.info('   = veredict for %s: %s' % (test, ver))
                 inf['veredict'] = ver
 

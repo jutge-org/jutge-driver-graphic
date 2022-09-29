@@ -17,7 +17,7 @@ regards to a given correct output file. In general, the checkers return 'AC',
 #############################################################################
 
 
-def graphic(file1, file2, diff):
+def graphic(file1, file2, diff, tolerance = None):
     '''
         The graphic checker is used to check for graphic outputs.
         It returns:
@@ -29,6 +29,10 @@ def graphic(file1, file2, diff):
 
         In addition, it generates a diff file with the difference
         of the images if not AC.
+
+        In addition, if tolerance is not None (a float), it returns 
+        AC rather than PE if the difference value between images is less
+        than tolerance.
     '''
 
     try:
@@ -61,6 +65,10 @@ def graphic(file1, file2, diff):
             return 'AC'
 
         os.system("compare -compose src %s %s %s" % (file1, file2, diff))
+
+        if tolerance is not None and value <= tolerance:
+            return 'AC'
+
         if value <= 0.05:     # valor patilleru buscat empiricament en cinc minuts
             return 'PE'
 
