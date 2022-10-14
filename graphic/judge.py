@@ -146,7 +146,7 @@ class Judge:
             # professor
             com = self.choose_solution_compiler()
             # hack for MyPy
-            if cpl == 'MyPy':
+            if cpl == 'MyPy' and util.file_exists('../problem/solution.py'):
                 logging.info('MyPy hack')
                 com = compilers.compiler('Python3', self.hdl)
 
