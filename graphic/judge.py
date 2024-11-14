@@ -17,6 +17,7 @@ import checkers
 from jutge import util
 import monitor
 
+
 class Judge:
 
     def go(self):
@@ -336,6 +337,8 @@ class Judge:
     def checking_step(self):
 
         logging.info('---- checking step ----')
+        logging.info(subprocess.run("ls -laR", capture_output=True, text=True, shell=True).stdout)
+        logging.info(subprocess.run("ls -laR %s'/problem" % self.dir, capture_output=True, text=True, shell=True).stdout)
 
         self.pha.checking.checker = checker = self.get('checker', 'std')
         self.pha.checking.presentation_error = presentation_error = self.get('presentation_error', True)
@@ -347,10 +350,12 @@ class Judge:
         self.pha.checking.tolerance = tolerance = t
 
         for test in self.tests:
+            logging.info('---- checking step %s ----', test)
             inf = self.pha.tests[test]
+            logging.info(str(inf))
             out = test + '.out'
             dif = test + '.dif.png'
-            cor = '../problem/' + test + '.cor'
+            cor = self.dir + '/problem/' + test + '.cor'
             inp = '../problem/' + test + '.inp'
             if 'execution' not in inf:
                 inf['veredict'] = '??'
@@ -361,6 +366,9 @@ class Judge:
                 inf['veredict'] = 'EE'
                 inf['veredict_info'] = inf['execution_error']
             else:
+                if not os.path.exists(out):
+                    out = test + '.workdir/output.png'
+                logging.info('using %s %s', out, cor)
                 ver = checkers.graphic(out, cor, dif, tolerance)
                 logging.info('   = veredict for %s: %s' % (test, ver))
                 inf['veredict'] = ver
@@ -529,8 +537,8 @@ def todict(obj, classkey=None):
         return [todict(v, classkey) for v in obj]
     elif hasattr(obj, "__dict__"):
         data = dict([(key, todict(value, classkey))
-        for key, value in obj.__dict__.items()
-            if not callable(value) and not key.startswith('_')])
+                     for key, value in obj.__dict__.items()
+                     if not callable(value) and not key.startswith('_')])
         if classkey is not None and hasattr(obj, "__class__"):
             data[classkey] = obj.__class__.__name__
         return data

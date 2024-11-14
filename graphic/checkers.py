@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 import os
+import glob
 import logging
 
 
@@ -17,7 +18,7 @@ regards to a given correct output file. In general, the checkers return 'AC',
 #############################################################################
 
 
-def graphic(file1, file2, diff, tolerance = None):
+def graphic(file1, file2, diff, tolerance=None):
     '''
         The graphic checker is used to check for graphic outputs.
         It returns:
@@ -36,6 +37,10 @@ def graphic(file1, file2, diff, tolerance = None):
     '''
 
     try:
+        logging.info('!!! %s %s', file1, file2)
+        logging.info(os.getcwd())
+        logging.info(glob.glob("*"))
+
         with open(file1, 'rb') as f:
             t1 = f.read()
         with open(file2, 'rb') as f:
@@ -75,5 +80,6 @@ def graphic(file1, file2, diff, tolerance = None):
         return 'WA'
 
     except Exception as e:
+        logging.info('ai ai ai')
         logging.info(str(e))
-        return 'IE'
+        return 'WA'
