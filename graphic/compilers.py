@@ -11,7 +11,7 @@ import shutil
 import turtle_pil
 
 import monitor
-from jutge import util
+import util
 
 # Maximum time to compile
 max_compilation_time = 30
