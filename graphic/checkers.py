@@ -69,7 +69,8 @@ def graphic(file1, file2, diff, tolerance=None):
         if value == 0:
             return "AC"
 
-        os.system("compare -compose src %s %s %s" % (file1, file2, diff))
+        # seems that imagemagick's compare command must now include the difference command
+        os.system("compare -compose difference src %s %s %s" % (file1, file2, diff))
 
         if tolerance is not None and value <= tolerance:
             return "AC"
